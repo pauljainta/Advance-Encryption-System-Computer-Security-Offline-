@@ -67,7 +67,7 @@ InvMixer = [
 ]
 
 
-# // amar code
+# amar code
 
 key=input("Enter Key:")
 
@@ -82,19 +82,22 @@ if(key_length<16):
    key=key.ljust(16,"0")
 
 
-print(len(key))
+# print(len(key))
+# print(key)
+
+key=" ".join("{:02x}".format(ord(c)) for c in key)
 print(key)
 
 
-# b = BitVector(hexstring="4E")
-# int_val = b.intValue()
-# s = Sbox[int_val]
-# s = BitVector(intVal=s, size=8)
-# print(s.get_bitvector_in_hex())
+b = BitVector(hexstring="4E")
+int_val = b.intValue()
+s = Sbox[int_val]
+s = BitVector(intVal=s, size=8)
+print(s.get_bitvector_in_hex())
 
-# AES_modulus = BitVector(bitstring='100011011')
+AES_modulus = BitVector(bitstring='100011011')
 
-# bv1 = BitVector(hexstring="02")
-# bv2 = BitVector(hexstring="63")
-# bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
-# print(bv3)
+bv1 = BitVector(hexstring="02")
+bv2 = BitVector(hexstring="63")
+bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
+print(bv3)
