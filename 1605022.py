@@ -12,7 +12,7 @@ Install The BitVector Library
 
 
 """Tables"""
-
+from collections import deque
 from BitVector import *
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -85,19 +85,90 @@ if(key_length<16):
 # print(len(key))
 # print(key)
 
-key=" ".join("{:02x}".format(ord(c)) for c in key)
-print(key)
+key="".join("{:02x}".format(ord(c)) for c in key)
+round_const = [1,0,0,0]
+
+w=[]
+w.append(key[0:8])
+w.append(key[8:16])
+w.append(key[16:24])
+w.append(key[24:32])
+
+input_index=3
+process_index=0
+for i in range(10):
+    input=w[input_index]
+    print("Input="+input)
+    
+      
+    Lfirst = input[0 :2]  
+    Lsecond = input[2 :] 
+
+    circ=Lsecond+Lfirst
+    print("circ="+circ)
+
+#Thats my Kung Fu
+
+    byte_sub=""
+    j=0
+    while True:
+        x=BitVector(hexstring=circ[j:j+2])
+        int_val=x.intValue()
+        s = Sbox[int_val]
+        s = BitVector(intVal=s, size=8)
+        s=s.get_bitvector_in_hex()
+        byte_sub+=s
+        j=j+2
+        if(j==8):
+            break
+
+    
+    print("byte sub="+byte_sub)
+   
+
+    print(round_const)
+    g=""
+
+    g += (hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:]).rjust(2,"0")
+    g += (hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:]).rjust(2,"0")
+    g += (hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:]).rjust(2,"0")
+    g += (hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:]).rjust(2,"0")
+    if i==3:
+        print(byte_sub[4:6])
+        print(hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:])
+        print(hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:])
+        print(hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:])
+        print(hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:])
+
+    print("g="+g)
+
+    w.append(hex(int(w[input_index-3],16)^int(g,16))[2:])
+    w.append(hex(int(w[input_index-3+4],16)^int(w[input_index-3+1],16))[2:])
+    w.append(hex(int(w[input_index-3+5],16)^int(w[input_index-3+2],16))[2:])
+    w.append(hex(int(w[input_index-3+6],16)^int(w[input_index-3+3],16))[2:])
+
+    
+    AES_modulus = BitVector(bitstring='100011011')
+    round_const[0] =  BitVector(intVal=round_const[0]).gf_multiply_modular(BitVector(hexstring = "02"),AES_modulus,8).intValue()
+    input_index+=4
+
+    print("\n\n")
+
+    
+
+# i=0
+# while True:
+#     print("Round "+str(i)+":"+w[i]+" "+w[i+1]+" "+w[i+2]+" "+w[i+3])
+#     if(i+3==43):
+#         break
+#     i=i+4
+
+# for i in range(10):
+#     print(w[i:i+4])
+# print(len(w))
 
 
-b = BitVector(hexstring="4E")
-int_val = b.intValue()
-s = Sbox[int_val]
-s = BitVector(intVal=s, size=8)
-print(s.get_bitvector_in_hex())
-
-AES_modulus = BitVector(bitstring='100011011')
-
-bv1 = BitVector(hexstring="02")
-bv2 = BitVector(hexstring="63")
-bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
-print(bv3)
+for i in range(11):
+    x=i*4
+    # string=w[x:x+4]
+    print("Round " +str(i)+" :"+str(w[x:x+4]))
