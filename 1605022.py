@@ -133,19 +133,19 @@ for i in range(10):
     g += (hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:]).rjust(2,"0")
     g += (hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:]).rjust(2,"0")
     g += (hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:]).rjust(2,"0")
-    if i==3:
-        print(byte_sub[4:6])
-        print(hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:])
-        print(hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:])
-        print(hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:])
-        print(hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:])
+    # if i==3:
+    #     print(byte_sub[4:6])
+    #     print(hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:])
+    #     print(hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:])
+    #     print(hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:])
+    #     print(hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:])
 
     print("g="+g)
 
-    w.append(hex(int(w[input_index-3],16)^int(g,16))[2:])
-    w.append(hex(int(w[input_index-3+4],16)^int(w[input_index-3+1],16))[2:])
-    w.append(hex(int(w[input_index-3+5],16)^int(w[input_index-3+2],16))[2:])
-    w.append(hex(int(w[input_index-3+6],16)^int(w[input_index-3+3],16))[2:])
+    w.append((hex(int(w[input_index-3],16)^int(g,16))[2:]).rjust(8,"0"))
+    w.append((hex(int(w[input_index-3+4],16)^int(w[input_index-3+1],16))[2:]).rjust(8,"0"))
+    w.append((hex(int(w[input_index-3+5],16)^int(w[input_index-3+2],16))[2:]).rjust(8,"0"))
+    w.append((hex(int(w[input_index-3+6],16)^int(w[input_index-3+3],16))[2:]).rjust(8,"0"))
 
     
     AES_modulus = BitVector(bitstring='100011011')
