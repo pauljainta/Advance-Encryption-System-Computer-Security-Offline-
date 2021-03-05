@@ -14,6 +14,8 @@ Install The BitVector Library
 """Tables"""
 from collections import deque
 from BitVector import *
+import numpy as np
+
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -70,6 +72,7 @@ InvMixer = [
 # amar code
 
 key=input("Enter Key:")
+plaintext=input("Enter plaintext:")
 
 key_length=len(key)
 
@@ -85,14 +88,18 @@ if(key_length<16):
 # print(len(key))
 # print(key)
 
-key="".join("{:02x}".format(ord(c)) for c in key)
+key_in_hex=("".join("{:02x}".format(ord(c)) for c in key)).rjust(32,"0")
+plaintext_in_hex=("".join("{:02x}".format(ord(c)) for c in plaintext)).rjust(32,"0")
+
+# print(plaintext_in_hex)
+
 round_const = [1,0,0,0]
 
 w=[]
-w.append(key[0:8])
-w.append(key[8:16])
-w.append(key[16:24])
-w.append(key[24:32])
+w.append(key_in_hex[0:8])
+w.append(key_in_hex[8:16])
+w.append(key_in_hex[16:24])
+w.append(key_in_hex[24:32])
 
 input_index=3
 process_index=0
@@ -108,6 +115,7 @@ for i in range(10):
     print("circ="+circ)
 
 #Thats my Kung Fu
+# Two One Nine Two
 
     byte_sub=""
     j=0
@@ -133,12 +141,7 @@ for i in range(10):
     g += (hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:]).rjust(2,"0")
     g += (hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:]).rjust(2,"0")
     g += (hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:]).rjust(2,"0")
-    # if i==3:
-    #     print(byte_sub[4:6])
-    #     print(hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:])
-    #     print(hex(int(byte_sub[2:4], 16) ^ round_const[1])[2:])
-    #     print(hex(int(byte_sub[4:6], 16) ^ round_const[2])[2:])
-    #     print(hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:])
+
 
     print("g="+g)
 
@@ -154,21 +157,40 @@ for i in range(10):
 
     print("\n\n")
 
-    
-
-# i=0
-# while True:
-#     print("Round "+str(i)+":"+w[i]+" "+w[i+1]+" "+w[i+2]+" "+w[i+3])
-#     if(i+3==43):
-#         break
-#     i=i+4
-
-# for i in range(10):
-#     print(w[i:i+4])
-# print(len(w))
 
 
-for i in range(11):
-    x=i*4
-    # string=w[x:x+4]
-    print("Round " +str(i)+" :"+str(w[x:x+4]))
+
+roundKey0_matrix=np.empty((4,0),str)
+
+# print(w[0][0:2])
+
+for i in range(4):
+    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
+    roundKey0_matrix = np.append(roundKey0_matrix, np.array([column_list_1]).transpose(), axis=1)
+
+
+
+plaintext_matrix=np.empty((4,0),str)
+
+print(plaintext_in_hex)
+for i in range(4):
+    x=i*8
+    temp_w=plaintext_in_hex[x:x+8]
+    # print("tempw="+temp_w)
+    column_list_1 = [temp_w[0:2],temp_w[2:4] , temp_w[4:6], temp_w[6:8]]
+    plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
+
+
+#print(plaintext_matrix)
+
+# print("test="+hex(int("1",16)^int("0",16)))
+
+state_matrix=hex(int(str(plaintext_matrix),16)^int(str(roundKey0_matrix),16))
+print(state_matrix)
+
+# print(type(plaintext_matrix))
+# print(np.matrix(plaintext_in_hex[0:2]))
+# for i in range(11):
+#     x=i*4
+#     # string=w[x:x+4]
+#     print("Round " +str(i)+" :"+str(w[x:x+4]))
