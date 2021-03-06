@@ -73,6 +73,10 @@ mixer=np.array([["02","03","01","01"],
                 ["01","02","03","01"],
                 ["01","01","02","03"],
                 ["03","01","01","02"]])
+inv_mixer=np.array([["0E","0B","0D","09"],
+                ["09","0E","0B","0D"],
+                ["0D","09","0E","0B"],
+                ["0B","0D","09","0E"]])              
 
 
 def matrix_xor(mat1,mat2):
@@ -86,14 +90,17 @@ def matrix_xor(mat1,mat2):
     return return_mat
 
 
-def matrix_sub_bytes(mat):
+def matrix_sub_bytes(n,mat):
     return_mat=np.empty((4,0),str)
     for i in range(4):
         column_list_1=[]
         for j in range(4):
             b = BitVector(hexstring=mat[j][i])
             int_val = b.intValue()
-            s = Sbox[int_val]
+            if(n==1):
+                s = Sbox[int_val]
+            else:
+                s=InvSbox[int_val]    
             s = BitVector(intVal=s, size=8)
             x=s.get_bitvector_in_hex()
             column_list_1.append(x)
@@ -155,7 +162,6 @@ plaintext=input("Enter plaintext:")
 
 key_length=len(key)
 
-# print(key_length)
 
 if(key_length>16):
     key=key[0:16]
@@ -164,13 +170,12 @@ if(key_length<16):
    key=key.ljust(16,"0")
 
 
-# print(len(key))
-# print(key)
+
 
 key_in_hex=("".join("{:02x}".format(ord(c)) for c in key)).rjust(32,"0")
 plaintext_in_hex=("".join("{:02x}".format(ord(c)) for c in plaintext)).rjust(32,"0")
 
-# print(plaintext_in_hex)
+print(plaintext_in_hex)
 
 round_const = [1,0,0,0]
 
@@ -184,14 +189,14 @@ input_index=3
 process_index=0
 for i in range(10):
     input=w[input_index]
-    print("Input="+input)
+    # print("Input="+input)
     
       
     Lfirst = input[0 :2]  
     Lsecond = input[2 :] 
 
     circ=Lsecond+Lfirst
-    print("circ="+circ)
+    
 
 #Thats my Kung Fu
 # Two One Nine Two
@@ -210,10 +215,6 @@ for i in range(10):
             break
 
     
-    print("byte sub="+byte_sub)
-   
-
-    print(round_const)
     g=""
 
     g += (hex(int(byte_sub[0:2], 16) ^ round_const[0])[2:]).rjust(2,"0")
@@ -222,7 +223,6 @@ for i in range(10):
     g += (hex(int(byte_sub[6:8], 16) ^ round_const[3])[2:]).rjust(2,"0")
 
 
-    print("g="+g)
 
     w.append((hex(int(w[input_index-3],16)^int(g,16))[2:]).rjust(8,"0"))
     w.append((hex(int(w[input_index-3+4],16)^int(w[input_index-3+1],16))[2:]).rjust(8,"0"))
@@ -234,14 +234,11 @@ for i in range(10):
     round_const[0] =  BitVector(intVal=round_const[0]).gf_multiply_modular(BitVector(hexstring = "02"),AES_modulus,8).intValue()
     input_index+=4
 
-    print("\n\n")
 
 
-#round 0
 
 roundKey0_matrix=np.empty((4,0),str)
 
-# print(w[0][0:2])
 
 for i in range(4):
     column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
@@ -251,16 +248,14 @@ for i in range(4):
 
 plaintext_matrix=np.empty((4,0),str)
 
-# print(plaintext_in_hex)
+
 for i in range(4):
     x=i*8
     temp_w=plaintext_in_hex[x:x+8]
-    # print("tempw="+temp_w)
     column_list_1 = [temp_w[0:2],temp_w[2:4] , temp_w[4:6], temp_w[6:8]]
     plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
 
 
-# print(plaintext_matrix)
 
 
 state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
@@ -270,7 +265,7 @@ state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
 
 #round 1-9
 for i in range(1,10):
-    state_matrix=matrix_sub_bytes(state_matrix)
+    state_matrix=matrix_sub_bytes(1,state_matrix)
     state_matrix=matrix_shif_row(1,state_matrix)
     state_matrix=matrix_mix_columns(mixer,state_matrix)
     x=i*4
@@ -285,7 +280,7 @@ for i in range(1,10):
 
 #for round 10
 
-state_matrix=matrix_sub_bytes(state_matrix)
+state_matrix=matrix_sub_bytes(1,state_matrix)
 state_matrix=matrix_shif_row(1,state_matrix)
 roundKey_matrix=np.empty((4,0),str)
 for i in range(40,44):
@@ -294,4 +289,40 @@ for i in range(40,44):
 
 cipertext=matrix_xor(roundKey_matrix,state_matrix)
 print(cipertext)
+
+
+#decryption
+
+state_matrix=matrix_xor(cipertext,roundKey_matrix)
+
+# round 1-9
+for i in range(9,0,-1):
+    state_matrix=matrix_shif_row(0,state_matrix)
+    state_matrix=matrix_sub_bytes(0,state_matrix)
+    roundKey_matrix=np.empty((4,0),str)
+    x=i*4
+    for j in range(x,x+4):
+        column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+        roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
+
+    state_matrix=matrix_xor(state_matrix,roundKey_matrix)
+    state_matrix=matrix_mix_columns(inv_mixer,state_matrix)
+
+
+# round 10
+
+state_matrix=matrix_shif_row(0,state_matrix)
+state_matrix=matrix_sub_bytes(0,state_matrix)
+
+roundKey_matrix=np.empty((4,0),str)
+for i in range(0,4):
+    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
+    roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
+
+decipertext=matrix_xor(roundKey_matrix,state_matrix)
+print(decipertext)
+
+
+
+
 
