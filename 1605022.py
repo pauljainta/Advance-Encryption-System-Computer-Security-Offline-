@@ -94,7 +94,33 @@ def matrix_sub_bytes(mat):
 
         return_mat = np.append(return_mat, np.array([column_list_1]).transpose(), axis=1)
 
-    return return_mat        
+    return return_mat
+
+
+
+
+def matrix_shif_row(x,mat):
+    if x==1:
+        mat[0,:]=np.roll(mat[0,:],0,0)
+        mat[1,:]=np.roll(mat[1,:],3,0)
+        mat[2,:]=np.roll(mat[2,:],2,0)
+        mat[3,:]=np.roll(mat[3,:],1,0)
+    else:
+        mat[0,:]=np.roll(mat[0,:],0,0)
+        mat[1,:]=np.roll(mat[1,:],1,0)
+        mat[2,:]=np.roll(mat[2,:],2,0)
+        mat[3,:]=np.roll(mat[3,:],3,0)
+
+
+
+    return mat    
+        
+
+
+
+        
+
+
 
 
 
@@ -210,12 +236,20 @@ for i in range(4):
     plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
 
 
-print(plaintext_matrix)
+# print(plaintext_matrix)
 
 
 state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
+# print(state_matrix)
+# state_matrix[0,:]=np.roll(state_matrix[0,:],3,0)
+state_matrix=matrix_sub_bytes(state_matrix)
+state_matrix=matrix_shif_row(1,state_matrix)
 
-print(matrix_sub_bytes(state_matrix))
+# print(matrix_shif_row(1,state_matrix))
+
+
+
+# print(matrix_sub_bytes(state_matrix))
 
 
 # for i in range(1,11):
