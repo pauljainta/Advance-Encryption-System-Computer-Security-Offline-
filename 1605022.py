@@ -135,7 +135,6 @@ def matrix_mix_columns(mat1,mat2):
             ins=(hex(int(bv3))[2:]).rjust(2,"0")
             cell.append(ins)
 
-        print(cell)
         return_mat = np.append(return_mat, np.array([cell]), axis=0)
 
     return return_mat            
@@ -238,7 +237,7 @@ for i in range(10):
     print("\n\n")
 
 
-
+#round 0
 
 roundKey0_matrix=np.empty((4,0),str)
 
@@ -265,37 +264,34 @@ for i in range(4):
 
 
 state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
-# print(state_matrix)
-# state_matrix[0,:]=np.roll(state_matrix[0,:],3,0)
+
+
+
+
+#round 1-9
+for i in range(1,10):
+    state_matrix=matrix_sub_bytes(state_matrix)
+    state_matrix=matrix_shif_row(1,state_matrix)
+    state_matrix=matrix_mix_columns(mixer,state_matrix)
+    x=i*4
+    roundKey_matrix=np.empty((4,0),str)
+    for j in range(x,x+4):
+        column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+        roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
+
+    state_matrix=matrix_xor(state_matrix,roundKey_matrix)
+
+
+
+#for round 10
+
 state_matrix=matrix_sub_bytes(state_matrix)
 state_matrix=matrix_shif_row(1,state_matrix)
-print(state_matrix)
-state_matrix=matrix_mix_columns(mixer,state_matrix)
-print(state_matrix)
+roundKey_matrix=np.empty((4,0),str)
+for i in range(40,44):
+    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
+    roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
-# print(matrix_shif_row(1,state_matrix))
+cipertext=matrix_xor(roundKey_matrix,state_matrix)
+print(cipertext)
 
-
-
-# print(matrix_sub_bytes(state_matrix))
-
-
-# for i in range(1,11):
-    
-
-# print(state_matrix)
-
-# state_matrix=np.empty((4,0),str)
-# for i in range(4):
-#     for j in range(4):
-#         state_matrix=np.append(state_matrix,np.array)
-
-
-
-
-
-
-# for i in range(11):
-#     x=i*4
-#     # string=w[x:x+4]
-#     print("Round " +str(i)+" :"+str(w[x:x+4]))
