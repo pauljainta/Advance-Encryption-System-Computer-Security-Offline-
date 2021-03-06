@@ -69,6 +69,12 @@ InvMixer = [
 ]
 
 
+mixer=np.array([["02","03","01","01"],
+                ["01","02","03","01"],
+                ["01","01","02","03"],
+                ["03","01","01","02"]])
+
+
 def matrix_xor(mat1,mat2):
     return_mat=np.empty((4,0),str)
     for i in range(4):
@@ -111,10 +117,29 @@ def matrix_shif_row(x,mat):
         mat[2,:]=np.roll(mat[2,:],2,0)
         mat[3,:]=np.roll(mat[3,:],3,0)
 
-
-
     return mat    
         
+
+def matrix_mix_columns(mat1,mat2):
+    return_mat=np.empty((0,4),str)
+    AES_modulus = BitVector(bitstring='100011011')
+    for i in range(4):
+        cell=[]
+        for j in range(4):
+            bv3 = BitVector(hexstring="00")
+            for k in range(4):
+                bv1 = BitVector(hexstring=mat1[i][k])
+                bv2 = BitVector(hexstring=mat2[k][j])
+                bv3=bv3.__xor__(bv1.gf_multiply_modular(bv2,AES_modulus,8))
+            
+            ins=(hex(int(bv3))[2:]).rjust(2,"0")
+            cell.append(ins)
+
+        print(cell)
+        return_mat = np.append(return_mat, np.array([cell]), axis=0)
+
+    return return_mat            
+
 
 
 
@@ -244,6 +269,9 @@ state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
 # state_matrix[0,:]=np.roll(state_matrix[0,:],3,0)
 state_matrix=matrix_sub_bytes(state_matrix)
 state_matrix=matrix_shif_row(1,state_matrix)
+print(state_matrix)
+state_matrix=matrix_mix_columns(mixer,state_matrix)
+print(state_matrix)
 
 # print(matrix_shif_row(1,state_matrix))
 
