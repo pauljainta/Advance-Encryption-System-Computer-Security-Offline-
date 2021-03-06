@@ -69,6 +69,35 @@ InvMixer = [
 ]
 
 
+def matrix_xor(mat1,mat2):
+    return_mat=np.empty((4,0),str)
+    for i in range(4):
+        column_list_1=[]
+        for j in range(4):
+            x=(hex(int(mat1[j][i],16)^int(mat2[j][i],16))[2:]).rjust(2,"0")
+            column_list_1.append(x)
+        return_mat = np.append(return_mat, np.array([column_list_1]).transpose(), axis=1)
+    return return_mat
+
+
+def matrix_sub_bytes(mat):
+    return_mat=np.empty((4,0),str)
+    for i in range(4):
+        column_list_1=[]
+        for j in range(4):
+            b = BitVector(hexstring=mat[j][i])
+            int_val = b.intValue()
+            s = Sbox[int_val]
+            s = BitVector(intVal=s, size=8)
+            x=s.get_bitvector_in_hex()
+            column_list_1.append(x)
+
+        return_mat = np.append(return_mat, np.array([column_list_1]).transpose(), axis=1)
+
+    return return_mat        
+
+
+
 # amar code
 
 key=input("Enter Key:")
@@ -172,7 +201,7 @@ for i in range(4):
 
 plaintext_matrix=np.empty((4,0),str)
 
-print(plaintext_in_hex)
+# print(plaintext_in_hex)
 for i in range(4):
     x=i*8
     temp_w=plaintext_in_hex[x:x+8]
@@ -181,15 +210,29 @@ for i in range(4):
     plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
 
 
-#print(plaintext_matrix)
+print(plaintext_matrix)
 
-# print("test="+hex(int("1",16)^int("0",16)))
 
-state_matrix=hex(int(str(plaintext_matrix),16)^int(str(roundKey0_matrix),16))
-print(state_matrix)
+state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
 
-# print(type(plaintext_matrix))
-# print(np.matrix(plaintext_in_hex[0:2]))
+print(matrix_sub_bytes(state_matrix))
+
+
+# for i in range(1,11):
+    
+
+# print(state_matrix)
+
+# state_matrix=np.empty((4,0),str)
+# for i in range(4):
+#     for j in range(4):
+#         state_matrix=np.append(state_matrix,np.array)
+
+
+
+
+
+
 # for i in range(11):
 #     x=i*4
 #     # string=w[x:x+4]
