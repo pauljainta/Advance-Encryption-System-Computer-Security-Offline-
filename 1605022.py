@@ -15,6 +15,7 @@ Install The BitVector Library
 from collections import deque
 from BitVector import *
 import numpy as np
+import time
 
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -155,10 +156,13 @@ def matrix_mix_columns(mat1,mat2):
 
 
 
-# amar code
+
+#key generation
 
 key=input("Enter Key:")
 plaintext=input("Enter plaintext:")
+
+key_generation_start_time=time.time()
 
 key_length=len(key)
 
@@ -175,7 +179,8 @@ if(key_length<16):
 key_in_hex=("".join("{:02x}".format(ord(c)) for c in key)).rjust(32,"0")
 plaintext_in_hex=("".join("{:02x}".format(ord(c)) for c in plaintext)).rjust(32,"0")
 
-print(plaintext_in_hex)
+print("PlaintText in hex="+plaintext_in_hex)
+print("Key in hex="+key_in_hex)
 
 round_const = [1,0,0,0]
 
@@ -236,6 +241,11 @@ for i in range(10):
 
 
 
+key_generation_end_time=time.time()
+
+#encryption
+
+encryption_start_time=time.time()
 
 roundKey0_matrix=np.empty((4,0),str)
 
@@ -288,11 +298,17 @@ for i in range(40,44):
     roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
 cipertext=matrix_xor(roundKey_matrix,state_matrix)
-print(cipertext)
+cipertext_in_hex=''.join(ele for sub in np.transpose(cipertext) for ele in sub)
+print("Ciphertext in hex="+cipertext_in_hex)
+cipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(cipertext_in_hex[0::2],cipertext_in_hex[1::2])])
+print("Ciphertext in ASCII="+cipertext_in_ascii)
+
+encryption_end_time=time.time()
 
 
 #decryption
 
+decryption_start_time=time.time()
 state_matrix=matrix_xor(cipertext,roundKey_matrix)
 
 # round 1-9
@@ -320,7 +336,20 @@ for i in range(0,4):
     roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
 decipertext=matrix_xor(roundKey_matrix,state_matrix)
-print(decipertext)
+
+decipertext_in_hex=''.join(ele for sub in np.transpose(decipertext) for ele in sub)
+print("Deciphertext in hex="+decipertext_in_hex)
+decipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(decipertext_in_hex[0::2],decipertext_in_hex[1::2])])
+print("Deciphertext in ASCII="+decipertext_in_ascii)
+
+decryption_end_time=time.time()
+
+print("Execution time")
+print("Key generation:"+str(key_generation_end_time-key_generation_start_time)+" seconds")
+print("Encryption:"+str(encryption_end_time-encryption_start_time)+" seconds")
+print("Decryption:"+str(decryption_end_time-decryption_start_time)+" seconds")
+
+# print(decipertext)
 
 
 
