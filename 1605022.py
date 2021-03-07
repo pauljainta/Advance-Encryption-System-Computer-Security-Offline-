@@ -16,6 +16,7 @@ from collections import deque
 from BitVector import *
 import numpy as np
 import time
+import os
 
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -150,11 +151,7 @@ def matrix_mix_columns(mat1,mat2):
 
 
 
-        
-
-
-
-
+    
 
 
 #key generation
@@ -162,7 +159,11 @@ def matrix_mix_columns(mat1,mat2):
 key=input("Enter Key:")
 plaintext=input("Enter plaintext:")
 
+if(os.path.isfile(plaintext)):
+    print("ItS a file")
+
 key_generation_start_time=time.time()
+
 
 key_length=len(key)
 
@@ -351,6 +352,58 @@ print("Decryption:"+str(decryption_end_time-decryption_start_time)+" seconds")
 
 # print(decipertext)
 
+
+
+
+# generating s-box
+
+Self_Sbox=[]
+
+AES_modulus = BitVector(bitstring='100011011')
+
+Self_Sbox.append(hex(99))
+
+
+
+for i in range(1,256):
+    bv=BitVector(hexstring=((hex(i)[2:]).rjust(2,"0")))
+    bv1=bv.gf_MI(AES_modulus, 8)
+    s = (BitVector(hexstring="63")) ^ bv1 ^ (bv1<<1) ^ (bv1<<1) ^ (bv1<<1) ^ (bv1<<1)
+    Self_Sbox.append(hex(int(s.get_bitvector_in_hex(), 16)))
+
+
+print(Self_Sbox)
+
+
+
+
+
+
+
+
+
+# Generated_SBox = [0] * 256
+
+# def create_SBox():
+#     AES_modulus = BitVector(bitstring='100011011')
+#     b63 = BitVector(hexstring="63")
+
+#     for i in range(256):
+#         if i == 0:
+#             Generated_SBox[i] = 0x63
+#             continue
+
+#         hexval = hex(i)
+#         hexval = hexval[2:]
+#         bv = BitVector(hexstring=hexval)
+
+#         bv = bv.gf_MI(AES_modulus, 8)
+
+#         s = b63 ^ bv ^ (bv<<1) ^ (bv<<1) ^ (bv<<1) ^ (bv<<1)
+#         Generated_SBox[i] = hex(int(s.get_bitvector_in_hex(), base=16))
+
+# create_SBox()
+# print(Generated_SBox)
 
 
 
