@@ -300,7 +300,7 @@ for i in range(40,44):
 
 cipertext=matrix_xor(roundKey_matrix,state_matrix)
 cipertext_in_hex=''.join(ele for sub in np.transpose(cipertext) for ele in sub)
-print("Ciphertext in hex="+cipertext_in_hex)
+print("\n\nCiphertext in hex="+cipertext_in_hex)
 cipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(cipertext_in_hex[0::2],cipertext_in_hex[1::2])])
 print("Ciphertext in ASCII="+cipertext_in_ascii)
 
@@ -339,13 +339,13 @@ for i in range(0,4):
 decipertext=matrix_xor(roundKey_matrix,state_matrix)
 
 decipertext_in_hex=''.join(ele for sub in np.transpose(decipertext) for ele in sub)
-print("Deciphertext in hex="+decipertext_in_hex)
+print("\n\nDeciphertext in hex="+decipertext_in_hex)
 decipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(decipertext_in_hex[0::2],decipertext_in_hex[1::2])])
 print("Deciphertext in ASCII="+decipertext_in_ascii)
 
 decryption_end_time=time.time()
 
-print("Execution time")
+print("\n\nExecution time")
 print("Key generation:"+str(key_generation_end_time-key_generation_start_time)+" seconds")
 print("Encryption:"+str(encryption_end_time-encryption_start_time)+" seconds")
 print("Decryption:"+str(decryption_end_time-decryption_start_time)+" seconds")
@@ -371,39 +371,34 @@ for i in range(1,256):
     s = (BitVector(hexstring="63")) ^ bv1 ^ (bv1<<1) ^ (bv1<<1) ^ (bv1<<1) ^ (bv1<<1)
     Self_Sbox.append(hex(int(s.get_bitvector_in_hex(), 16)))
 
-
+print("\n\nSbox generation\n")
 print(Self_Sbox)
+print("\n\n")
+
+
+# generating InvSbox
+
+Self_InvSbox=[]
+
+AES_modulus = BitVector(bitstring='100011011')
+
+
+for i in range(256):
+    if i==0x63:
+        Self_InvSbox.append(0x00)
+    else:    
+        s = BitVector(intVal=i, size=8)
+        bv = ( BitVector(intVal=5, size=8)) ^ (s<<1) ^ (s<<2) ^(s<<3)
+        bv = bv.gf_MI(AES_modulus, 8)
+        Self_InvSbox.append(hex(int(bv.get_bitvector_in_hex(),16)))
+
+print("Inverse Sbox Generation")
+print(Self_InvSbox)
+print("\n\n")
 
 
 
 
-
-
-
-
-
-# Generated_SBox = [0] * 256
-
-# def create_SBox():
-#     AES_modulus = BitVector(bitstring='100011011')
-#     b63 = BitVector(hexstring="63")
-
-#     for i in range(256):
-#         if i == 0:
-#             Generated_SBox[i] = 0x63
-#             continue
-
-#         hexval = hex(i)
-#         hexval = hexval[2:]
-#         bv = BitVector(hexstring=hexval)
-
-#         bv = bv.gf_MI(AES_modulus, 8)
-
-#         s = b63 ^ bv ^ (bv<<1) ^ (bv<<1) ^ (bv<<1) ^ (bv<<1)
-#         Generated_SBox[i] = hex(int(s.get_bitvector_in_hex(), base=16))
-
-# create_SBox()
-# print(Generated_SBox)
 
 
 
