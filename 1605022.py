@@ -159,8 +159,7 @@ def matrix_mix_columns(mat1,mat2):
 key=input("Enter Key:")
 plaintext=input("Enter plaintext:")
 
-if(os.path.isfile(plaintext)):
-    print("ItS a file")
+
 
 key_generation_start_time=time.time()
 
@@ -178,9 +177,6 @@ if(key_length<16):
 
 
 key_in_hex=("".join("{:02x}".format(ord(c)) for c in key)).rjust(32,"0")
-plaintext_in_hex=("".join("{:02x}".format(ord(c)) for c in plaintext)).rjust(32,"0")
-
-print("PlaintText in hex="+plaintext_in_hex)
 print("Key in hex="+key_in_hex)
 
 round_const = [1,0,0,0]
@@ -244,113 +240,124 @@ for i in range(10):
 
 key_generation_end_time=time.time()
 
+
+
+def encryption_decryption(plaintext):
 #encryption
 
-encryption_start_time=time.time()
+    encryption_start_time=time.time()
 
-roundKey0_matrix=np.empty((4,0),str)
+    plaintext_in_hex=("".join("{:02x}".format(ord(c)) for c in plaintext)).rjust(32,"0")
 
+    print("PlaintText in hex="+plaintext_in_hex)
 
-for i in range(4):
-    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
-    roundKey0_matrix = np.append(roundKey0_matrix, np.array([column_list_1]).transpose(), axis=1)
-
+    roundKey0_matrix=np.empty((4,0),str)
 
 
-plaintext_matrix=np.empty((4,0),str)
-
-
-for i in range(4):
-    x=i*8
-    temp_w=plaintext_in_hex[x:x+8]
-    column_list_1 = [temp_w[0:2],temp_w[2:4] , temp_w[4:6], temp_w[6:8]]
-    plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
+    for i in range(4):
+        column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
+        roundKey0_matrix = np.append(roundKey0_matrix, np.array([column_list_1]).transpose(), axis=1)
 
 
 
-
-state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
-
+    plaintext_matrix=np.empty((4,0),str)
 
 
+    for i in range(4):
+        x=i*8
+        temp_w=plaintext_in_hex[x:x+8]
+        column_list_1 = [temp_w[0:2],temp_w[2:4] , temp_w[4:6], temp_w[6:8]]
+        plaintext_matrix = np.append(plaintext_matrix, np.array([column_list_1]).transpose(), axis=1)    
 
-#round 1-9
-for i in range(1,10):
+
+
+
+    state_matrix=matrix_xor(plaintext_matrix,roundKey0_matrix)
+
+
+
+
+    #round 1-9
+    for i in range(1,10):
+        state_matrix=matrix_sub_bytes(1,state_matrix)
+        state_matrix=matrix_shif_row(1,state_matrix)
+        state_matrix=matrix_mix_columns(mixer,state_matrix)
+        x=i*4
+        roundKey_matrix=np.empty((4,0),str)
+        for j in range(x,x+4):
+            column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+            roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
+
+        state_matrix=matrix_xor(state_matrix,roundKey_matrix)
+
+
+
+    #for round 10
+
     state_matrix=matrix_sub_bytes(1,state_matrix)
     state_matrix=matrix_shif_row(1,state_matrix)
-    state_matrix=matrix_mix_columns(mixer,state_matrix)
-    x=i*4
     roundKey_matrix=np.empty((4,0),str)
-    for j in range(x,x+4):
-        column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+    for i in range(40,44):
+        column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
         roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
-    state_matrix=matrix_xor(state_matrix,roundKey_matrix)
+    cipertext=matrix_xor(roundKey_matrix,state_matrix)
+    cipertext_in_hex=''.join(ele for sub in np.transpose(cipertext) for ele in sub)
+    print("\n\nCiphertext in hex="+cipertext_in_hex)
+    cipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(cipertext_in_hex[0::2],cipertext_in_hex[1::2])])
+    print("Ciphertext in ASCII="+cipertext_in_ascii)
 
-
-
-#for round 10
-
-state_matrix=matrix_sub_bytes(1,state_matrix)
-state_matrix=matrix_shif_row(1,state_matrix)
-roundKey_matrix=np.empty((4,0),str)
-for i in range(40,44):
-    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
-    roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
-
-cipertext=matrix_xor(roundKey_matrix,state_matrix)
-cipertext_in_hex=''.join(ele for sub in np.transpose(cipertext) for ele in sub)
-print("\n\nCiphertext in hex="+cipertext_in_hex)
-cipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(cipertext_in_hex[0::2],cipertext_in_hex[1::2])])
-print("Ciphertext in ASCII="+cipertext_in_ascii)
-
-encryption_end_time=time.time()
+    encryption_end_time=time.time()
 
 
 #decryption
+# def decryption():
+    decryption_start_time=time.time()
+    state_matrix=matrix_xor(cipertext,roundKey_matrix)
 
-decryption_start_time=time.time()
-state_matrix=matrix_xor(cipertext,roundKey_matrix)
+    # round 1-9
+    for i in range(9,0,-1):
+        state_matrix=matrix_shif_row(0,state_matrix)
+        state_matrix=matrix_sub_bytes(0,state_matrix)
+        roundKey_matrix=np.empty((4,0),str)
+        x=i*4
+        for j in range(x,x+4):
+            column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+            roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
-# round 1-9
-for i in range(9,0,-1):
+        state_matrix=matrix_xor(state_matrix,roundKey_matrix)
+        state_matrix=matrix_mix_columns(inv_mixer,state_matrix)
+
+
+    # round 10
+
     state_matrix=matrix_shif_row(0,state_matrix)
     state_matrix=matrix_sub_bytes(0,state_matrix)
+
     roundKey_matrix=np.empty((4,0),str)
-    x=i*4
-    for j in range(x,x+4):
-        column_list_1 = [w[j][0:2],w[j][2:4] , w[j][4:6], w[j][6:8]]
+    for i in range(0,4):
+        column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
         roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
 
-    state_matrix=matrix_xor(state_matrix,roundKey_matrix)
-    state_matrix=matrix_mix_columns(inv_mixer,state_matrix)
+    decipertext=matrix_xor(roundKey_matrix,state_matrix)
 
+    decipertext_in_hex=''.join(ele for sub in np.transpose(decipertext) for ele in sub)
+    print("\n\nDeciphertext in hex="+decipertext_in_hex)
+    decipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(decipertext_in_hex[0::2],decipertext_in_hex[1::2])])
+    print("Deciphertext in ASCII="+decipertext_in_ascii)
 
-# round 10
+    decryption_end_time=time.time()
 
-state_matrix=matrix_shif_row(0,state_matrix)
-state_matrix=matrix_sub_bytes(0,state_matrix)
-
-roundKey_matrix=np.empty((4,0),str)
-for i in range(0,4):
-    column_list_1 = [w[i][0:2],w[i][2:4] , w[i][4:6], w[i][6:8]]
-    roundKey_matrix = np.append(roundKey_matrix, np.array([column_list_1]).transpose(), axis=1)
-
-decipertext=matrix_xor(roundKey_matrix,state_matrix)
-
-decipertext_in_hex=''.join(ele for sub in np.transpose(decipertext) for ele in sub)
-print("\n\nDeciphertext in hex="+decipertext_in_hex)
-decipertext_in_ascii=''.join([chr(int(''.join(c), 16)) for c in zip(decipertext_in_hex[0::2],decipertext_in_hex[1::2])])
-print("Deciphertext in ASCII="+decipertext_in_ascii)
-
-decryption_end_time=time.time()
-
-print("\n\nExecution time")
-print("Key generation:"+str(key_generation_end_time-key_generation_start_time)+" seconds")
-print("Encryption:"+str(encryption_end_time-encryption_start_time)+" seconds")
-print("Decryption:"+str(decryption_end_time-decryption_start_time)+" seconds")
+    print("\n\nExecution time")
+    print("Key generation:"+str(key_generation_end_time-key_generation_start_time)+" seconds")
+    print("Encryption:"+str(encryption_end_time-encryption_start_time)+" seconds")
+    print("Decryption:"+str(decryption_end_time-decryption_start_time)+" seconds")
 
 # print(decipertext)
+
+
+if(os.path.isfile(plaintext)==False):
+    encryption_decryption(plaintext)
 
 
 
